@@ -1,0 +1,65 @@
+# ─── macOS Finder / resource forks ──────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon file on external disk (Finder)
+Icon?
+
+# Thumbnails
+._*
+
+# ─── Git and archive files ────────────────────────────────────────────────────
+**.orig
+*.rej
+*.patch
+
+# ─── Node (if you ever have JS/Actions code) ──────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Python (if you ever use python scripts) ─────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+.Python
+
+# ─── Terraform / Bicep / ARM temp ─────────────────────────────────────────────
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.bicepcache
+*.azuredeploy.parameters.json
+
+# ─── Azure DevOps / GitHub Actions ──────────────────────────────────────────
+*.vault
+*.credentials.json
+azure-pipelines-*.yml.tmp
+
+# ─── IDEs / Editors ───────────────────────────────────────────────────────────
+# VS Code
+.vscode/
+.history/
+
+# JetBrains
+.idea/
+*.iml
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# ─── Secrets / environment vars ───────────────────────────────────────────────
+*.env
+.env.local
+.env.*.local
+
+# ─── Logs and temp files ─────────────────────────────────────────────────────
+*.log
+*.tmp
+*.temp
