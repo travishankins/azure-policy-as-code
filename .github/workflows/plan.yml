@@ -58,10 +58,10 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           & "${{ github.workspace }}/Scripts/Deploy/Build-DeploymentPlans.ps1" `
-            -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} `
-            -PlanFolder        ${{ inputs.PAC_OUTPUT_FOLDER }} `
-            -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
-            -InformationAction Continue
+            -PacEnvironmentSelector    ${{ inputs.pacEnvironmentSelector }} `
+            -OutputFolder              ${{ inputs.PAC_OUTPUT_FOLDER }} `
+            -DefinitionsRootFolder     ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
+            -InformationAction         Continue
 
       # 5) Detect if policy or role changes exist
       - name: Detect Plan File
