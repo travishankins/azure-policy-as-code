@@ -1,3 +1,4 @@
+# .github/workflows/plan.yml
 name: 'Reusable Workflow: Plan'
 
 on:
@@ -32,11 +33,11 @@ jobs:
       deployRoleChanges: ${{ steps.detectPlan.outputs.deployRoleChanges }}
 
     steps:
-      # 1) Bring down your code
+      # 1) Checkout the repository so Scripts/ and Helpers/ folders are available
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) Login to Azure
+      # 2) Azure login using service principal JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -44,7 +45,14 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
-      # 3) Build the plan
+      # 3) Debug: list Scripts folder to verify Helpers present
+      - name: 'Debug: list Scripts folder'
+        run: |
+          echo "Workspace root: $GITHUB_WORKSPACE"
+          echo "Contents of Scripts directory:"
+          ls -lR "$GITHUB_WORKSPACE/Scripts"
+
+      # 4) Build the plan using EPAC PowerShell script
       - name: Plan
         shell: pwsh
         working-directory: ${{ github.workspace }}
@@ -55,21 +63,21 @@ jobs:
             -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
             -InformationAction Continue
 
-      # 4) Detect diffs
+      # 5) Detect if policy or role changes exist
       - name: Detect Plan File
         id: detectPlan
         shell: pwsh
         run: |
           if (Test-Path "${{ inputs.PAC_OUTPUT_FOLDER }}") {
-            "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Output "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             if (Get-ChildItem "${{ inputs.PAC_OUTPUT_FOLDER }}" -Recurse -Include roles-plan.json) {
-              "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              Write-Output "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
           } else {
             Write-Host "Plan not found. Skipping deploy jobs."
           }
 
-      # 5) Upload plan for downstream jobs
+      # 6) Upload plan artifact if changes exist
       - name: Upload Deployment Plan as Artifact
         if: steps.detectPlan.outputs.deployPolicyChanges == 'yes' || steps.detectPlan.outputs.deployRoleChanges == 'yes'
         uses: actions/upload-artifact@v4

@@ -234,7 +234,7 @@ if ($warningMessages.Count -gt 0) {
 #endregion calculate which plans need to be built
 
 if ($buildSelections.buildAny) {
-    
+
     # get the scope table for the deployment root scope amd the resources
     $scopeTable = Build-ScopeTableForDeploymentRootScope -PacEnvironment $pacEnvironment
     $skipExemptions = -not $buildSelections.buildPolicyExemptions
