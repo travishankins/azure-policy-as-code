@@ -1,3 +1,4 @@
+# .github/workflows/plan.yml
 name: 'Reusable Workflow: Plan'
 
 on:
@@ -32,11 +33,11 @@ jobs:
       deployRoleChanges: ${{ steps.detectPlan.outputs.deployRoleChanges }}
 
     steps:
-      # 1) Checkout entire repo so Scripts/ and Helpers/ folders are available
+      # 1) Checkout the repository so Scripts/ and Helpers/ folders are available
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) Login to Azure
+      # 2) Azure login using service principal JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -44,18 +45,18 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
-      # 3) Build the plan from the checked-out Scripts folder
+      # 3) Build the deployment plan using EPAC PowerShell script
       - name: Plan
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           & "${{ github.workspace }}/Scripts/Deploy/Build-DeploymentPlans.ps1" `
             -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} `
-            -PlanFolder        ${{ inputs.PAC_OUTPUT_FOLDER }} `
+            -PlanFolder ${{ inputs.PAC_OUTPUT_FOLDER }} `
             -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
             -InformationAction Continue
 
-      # 4) Detect policy/role diffs
+      # 4) Detect if policy or role changes exist
       - name: Detect Plan File
         id: detectPlan
         shell: pwsh
@@ -69,7 +70,7 @@ jobs:
             Write-Host "Plan not found. Skipping deploy jobs."
           }
 
-      # 5) Upload the plan for downstream jobs
+      # 5) Upload plan artifact if changes exist
       - name: Upload Deployment Plan as Artifact
         if: steps.detectPlan.outputs.deployPolicyChanges == 'yes' || steps.detectPlan.outputs.deployRoleChanges == 'yes'
         uses: actions/upload-artifact@v4
