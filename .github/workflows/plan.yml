@@ -54,10 +54,10 @@ jobs:
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
-          & "${{ github.workspace }}/Scripts/Deploy/Build-DeploymentPlans.ps1" \
-            -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} \
-            -PlanFolder ${{ inputs.PAC_OUTPUT_FOLDER }} \
-            -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} \
+          & "${{ github.workspace }}/Scripts/Deploy/Build-DeploymentPlans.ps1" `
+            -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} `
+            -PlanFolder ${{ inputs.PAC_OUTPUT_FOLDER }} `
+            -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
             -InformationAction Continue
 
       # 4) Detect if there are policy or role changes to deploy
