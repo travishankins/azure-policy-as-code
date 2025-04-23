@@ -1,4 +1,3 @@
-# .github/workflows/plan.yml
 name: 'Reusable Workflow: Plan'
 
 on:
@@ -18,10 +17,10 @@ on:
         type: string
     outputs:
       deployPolicyChanges:
-        description: 'The result of evaluating if a policy deployment is required'
+        description: 'If a policy deployment is required'
         value: ${{ jobs.plan.outputs.deployPolicyChanges }}
       deployRoleChanges:
-        description: 'The result of evaluating if a role deployment is required'
+        description: 'If a role deployment is required'
         value: ${{ jobs.plan.outputs.deployRoleChanges }}
 
 jobs:
@@ -33,11 +32,11 @@ jobs:
       deployRoleChanges: ${{ steps.detectPlan.outputs.deployRoleChanges }}
 
     steps:
-      # 1) Checkout the repository so Scripts/ and Helpers/ folders are available
+      # 1) Bring down your code
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) Azure login using service principal JSON
+      # 2) Login to Azure
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -45,32 +44,32 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
-      # 3) Build the deployment plan using EPAC PowerShell script
+      # 3) Build the plan
       - name: Plan
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           & "${{ github.workspace }}/Scripts/Deploy/Build-DeploymentPlans.ps1" `
             -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} `
-            -PlanFolder ${{ inputs.PAC_OUTPUT_FOLDER }} `
+            -PlanFolder        ${{ inputs.PAC_OUTPUT_FOLDER }} `
             -DefinitionsFolder ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
             -InformationAction Continue
 
-      # 4) Detect if policy or role changes exist
+      # 4) Detect diffs
       - name: Detect Plan File
         id: detectPlan
         shell: pwsh
         run: |
           if (Test-Path "${{ inputs.PAC_OUTPUT_FOLDER }}") {
-            Write-Output "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             if (Get-ChildItem "${{ inputs.PAC_OUTPUT_FOLDER }}" -Recurse -Include roles-plan.json) {
-              Write-Output "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
           } else {
             Write-Host "Plan not found. Skipping deploy jobs."
           }
 
-      # 5) Upload plan artifact if changes exist
+      # 5) Upload plan for downstream jobs
       - name: Upload Deployment Plan as Artifact
         if: steps.detectPlan.outputs.deployPolicyChanges == 'yes' || steps.detectPlan.outputs.deployRoleChanges == 'yes'
         uses: actions/upload-artifact@v4
