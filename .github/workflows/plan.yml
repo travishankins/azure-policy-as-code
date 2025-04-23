@@ -17,10 +17,10 @@ on:
         type: string
     outputs:
       deployPolicyChanges:
-        description: "The result of evaluating if a policy deployment is required"
+        description: 'The result of evaluating if a policy deployment is required'
         value: ${{ jobs.plan.outputs.deployPolicyChanges }}
       deployRoleChanges:
-        description: "The result of evaluating if a role deployment is required"
+        description: 'The result of evaluating if a role deployment is required'
         value: ${{ jobs.plan.outputs.deployRoleChanges }}
 
 env:
@@ -42,8 +42,7 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
@@ -51,7 +50,7 @@ jobs:
         uses: azure/powershell@v2
         with:
           inlineScript: 'Scripts/Deploy/Build-DeploymentPlans.ps1 -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} -InformationAction Continue'
-          azPSVersion: "latest"
+          azPSVersion: 'latest'
 
       - name: Detect Plan File
         id: detectPlan
@@ -71,6 +70,6 @@ jobs:
         if: steps.detectPlan.outputs.deployPolicyChanges == 'yes' || steps.detectPlan.outputs.deployRoleChanges == 'yes'
         uses: actions/upload-artifact@v4
         with:
-          name: "plans-${{ inputs.pacEnvironmentSelector }}"
+          name: 'plans-${{ inputs.pacEnvironmentSelector }}'
           path: ${{ env.PAC_OUTPUT_FOLDER }}
           if-no-files-found: error
