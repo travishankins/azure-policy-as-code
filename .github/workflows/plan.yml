@@ -52,7 +52,7 @@ jobs:
           echo "Contents of Scripts directory:"
           ls -lR "$GITHUB_WORKSPACE/Scripts"
 
-      # 4) Build the plan using EPAC PowerShell script
+      # 4) Build the plan using EPAC PowerShell script and have output
       - name: Plan
         shell: pwsh
         working-directory: ${{ github.workspace }}
