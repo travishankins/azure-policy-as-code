@@ -1,3 +1,4 @@
+# .github/workflows/templates-ps1-use-scripts/remediate.yml
 name: 'Reusable Workflow: Remediation'
 
 on:
@@ -22,9 +23,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.planGitHubEnvironment }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      # 1) Checkout the repo so Scripts/ exist
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
+      # 2) Azure login using service principal JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -32,8 +35,14 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
-      - name: PolicyRemediation
+      # 3) Invoke remediation script by absolute path
+      - name: Policy Remediation
         uses: azure/powershell@v2
         with:
-          inlineScript: 'Scripts/Operations/New-AzRemediationTasks.ps1 -PacEnvironmentSelector ${{ env.pacEnvironmentSelector }} -OnlyCheckManagedAssignments -Interactive $false -InformationAction Continue'
+          inlineScript: |
+            & "${{ github.workspace }}/Scripts/Operations/New-AzRemediationTasks.ps1" `
+              -PacEnvironmentSelector ${{ env.pacEnvironmentSelector }} `
+              -OnlyCheckManagedAssignments `
+              -Interactive $false `
+              -InformationAction Continue
           azPSVersion: 'latest'

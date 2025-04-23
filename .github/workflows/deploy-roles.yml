@@ -1,3 +1,4 @@
+# .github/workflows/templates-ps1-use-scripts/deploy-roles.yml
 name: 'Reusable Workflow: Deploy Roles'
 
 on:
@@ -25,16 +26,18 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.planGitHubEnvironment }}
     steps:
-      - name: Checkout
+      # 1) Checkout the repository so scripts and definitions are available
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download Artifact
-        # If you are using GHES, use v3 instead of v4. See https://github.com/actions/download-artifact#v4---whats-new for more information.
+      # 2) Download the plan artifact
+      - name: Download plan artifact
         uses: actions/download-artifact@v4
         with:
           name: plans-${{ inputs.pacEnvironmentSelector }}
           path: ${{ inputs.PAC_INPUT_FOLDER }}
 
+      # 3) Azure login using service principal JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -42,8 +45,12 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
+      # 4) Deploy roles via EPAC PowerShell script (invoke by absolute path)
       - name: Deploy Roles
         uses: azure/powershell@v2
         with:
-          inlineScript: 'Scripts/Deploy/Deploy-RolesPlan.ps1 -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} -InformationAction Continue'
+          inlineScript: |
+            & "${{ github.workspace }}/Scripts/Deploy/Deploy-RolesPlan.ps1" \
+              -PacEnvironmentSelector ${{ inputs.pacEnvironmentSelector }} \
+              -InformationAction Continue
           azPSVersion: 'latest'
