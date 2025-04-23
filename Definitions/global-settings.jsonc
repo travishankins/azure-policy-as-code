@@ -6,7 +6,7 @@
       "pacSelector": "EPAC-DEV",
       "cloud": "AzureCloud",
       "tenantId": "1a724cfd-4df4-41ce-a745-475307b6a306",
-      "deploymentRootScope": "/providers/Microsoft.Management/managementGroups/4df7a0a2-1b2f-4a43-b48f-bed4b04a4f91",
+      "deploymentRootScope": "/providers/Microsoft.Management/managementGroups/dev",
       "desiredState": {
         // [optional]
         "strategy": "ownedOnly", // default full
@@ -20,7 +20,7 @@
       "pacSelector": "EPAC-PROD",
       "cloud": "AzureCloud",
       "tenantId": "1a724cfd-4df4-41ce-a745-475307b6a306",
-      "deploymentRootScope": "/providers/Microsoft.Management/managementGroups/4df7a0a2-1b2f-4a43-b48f-bed4b04a4f91",
+      "deploymentRootScope": "/providers/Microsoft.Management/managementGroups/Oceanview",
       "desiredState": {
         // [optional]
         "strategy": "full", // default full
