@@ -5,23 +5,27 @@ on:
   workflow_call:
     inputs:
       pacEnvironmentSelector:
+        description: 'Which EPAC environment to target (e.g. EPAC-DEV or EPAC-PROD)'
         required: true
         type: string
       planGitHubEnvironment:
+        description: 'GitHub Environment name for this plan (e.g. EPAC-DEV or TENANT-PLAN)'
         required: true
         type: string
       PAC_OUTPUT_FOLDER:
+        description: 'Local folder in the runner to output plan files'
         required: true
         type: string
       PAC_DEFINITIONS_FOLDER:
+        description: 'Local folder in the runner containing your Definitions JSON'
         required: true
         type: string
     outputs:
       deployPolicyChanges:
-        description: 'If a policy deployment is required'
+        description: 'Whether policy changes were detected'
         value: ${{ jobs.plan.outputs.deployPolicyChanges }}
       deployRoleChanges:
-        description: 'If a role deployment is required'
+        description: 'Whether role changes were detected'
         value: ${{ jobs.plan.outputs.deployRoleChanges }}
 
 jobs:
@@ -33,11 +37,11 @@ jobs:
       deployRoleChanges: ${{ steps.detectPlan.outputs.deployRoleChanges }}
 
     steps:
-      # 1) Checkout repo so Scripts/ and Helpers/ are available
+      # 1) Checkout your repository so Scripts/ and Helpers/ are available
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2) Azure login using service principal JSON
+      # 2) Authenticate to Azure with your SPN JSON
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -45,7 +49,7 @@ jobs:
           enable-AzPSSession: true
           allow-no-subscriptions: true
 
-      # 3) Debug: list Scripts folder to verify Helpers present
+      # 3) Debug: list Scripts folder to verify Helpers are present
       - name: 'Debug: list Scripts folder'
         run: |
           echo "Workspace root: $GITHUB_WORKSPACE"
@@ -64,23 +68,23 @@ jobs:
               -DefinitionsRootFolder     ${{ inputs.PAC_DEFINITIONS_FOLDER }} `
               -InformationAction         Continue
 
-      # 5) Detect if there are policy or role changes to deploy
+      # 5) Detect policy/role plan files to decide what to deploy
       - name: Detect Plan File
         id: detectPlan
         shell: pwsh
         run: |
           if (Test-Path "${{ inputs.PAC_OUTPUT_FOLDER }}") {
-            "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            Write-Output "deployPolicyChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             if (Get-ChildItem "${{ inputs.PAC_OUTPUT_FOLDER }}" -Recurse -Include roles-plan.json) {
-              "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              Write-Output "deployRoleChanges=yes" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
           } else {
-            Write-Host "Plan not found. Skipping deploy jobs."
+            Write-Host "Plan not found – skipping deploy jobs."
           }
 
-      # 6) Upload the plan artifact if changes exist
+      # 6) Upload the plan artifact for downstream deploy jobs
       - name: Upload Deployment Plan as Artifact
-        if: needs.plan.outputs.deployPolicyChanges == 'yes' || needs.plan.outputs.deployRoleChanges == 'yes'
+        if: steps.detectPlan.outputs.deployPolicyChanges == 'yes' || steps.detectPlan.outputs.deployRoleChanges == 'yes'
         uses: actions/upload-artifact@v4
         with:
           name: plans-${{ inputs.pacEnvironmentSelector }}
